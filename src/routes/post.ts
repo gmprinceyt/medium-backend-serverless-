@@ -75,11 +75,47 @@ blogRoute.post("/", async (c) => {
 });
 
 // PUT /api/v1/blog
-blogRoute.put("/api/v1/blog", (c) => {
-  c.status(201);
+blogRoute.put("/:id", async(c) => {
+  try {
+    const prisma = new PrismaClient({
+      datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+
+    const { success, data } = z.safeParse(BlogCreateSchema, await c.req.json());
+    
+    if (!success) {
+      throw new HTTPException(411, {
+        message: "title or Content Fields Requuire",
+      });
+    }
+    const { title, content } = data;
+    const id = c.req.param("id")
+    const authorId = c.get("userId");
+    const post = await prisma.post.update({
+      where: {
+        id
+      },
+      data: {
+        title,
+        content,
+        authorId,
+      },
+      select: {
+        id: true,
+      },
+    });
+   c.status(200);
   return c.json({
     message: "Successfully blog Updated ",
+    post
   });
+  } catch (e) {
+    if (e instanceof Error) {
+      throw new HTTPException(500, { message: e.message });
+    }
+  }
+
+  
 });
 
 // GET /api/v1/blog/bulk
