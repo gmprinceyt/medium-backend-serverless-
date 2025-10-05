@@ -59,7 +59,7 @@ blogRoute.post("/", async (c) => {
       },
       select: {
         id: true,
-        authorId: true
+        authorId: true,
       },
     });
     c.status(201);
@@ -75,25 +75,25 @@ blogRoute.post("/", async (c) => {
 });
 
 // PUT /api/v1/blog
-blogRoute.put("/:id", async(c) => {
+blogRoute.put("/:id", async (c) => {
   try {
     const prisma = new PrismaClient({
       datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
 
     const { success, data } = z.safeParse(BlogCreateSchema, await c.req.json());
-    
+
     if (!success) {
       throw new HTTPException(411, {
         message: "title or Content Fields Requuire",
       });
     }
     const { title, content } = data;
-    const id = c.req.param("id")
+    const id = c.req.param("id");
     const authorId = c.get("userId");
     const post = await prisma.post.update({
       where: {
-        id
+        id,
       },
       data: {
         title,
@@ -104,37 +104,67 @@ blogRoute.put("/:id", async(c) => {
         id: true,
       },
     });
-   c.status(200);
-  return c.json({
-    message: "Successfully blog Updated ",
-    post
-  });
+    c.status(200);
+    return c.json({
+      message: "Successfully blog Updated ",
+      post,
+    });
   } catch (e) {
     if (e instanceof Error) {
       throw new HTTPException(500, { message: e.message });
     }
   }
-
-  
 });
 
+
 // GET /api/v1/blog/bulk
-blogRoute.get("/api/v1/blog/bulk", (c) => {
-  return c.json({
-    message: "Successfully blog Bulk ",
-  });
+blogRoute.get("/bulk", async (c) => {
+ try {
+    const prisma = new PrismaClient({
+      datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+    const page  = c.req.query("page");
+    const skip = Number(page) * 10 || 0;
+
+    const blogs  = await prisma.post.findMany({
+      skip,
+      take: 10,
+    })  
+    return c.json({
+      message: "Success",
+      blogs
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
 });
 
 // GET /api/v1/blog/:id
-blogRoute.get("/api/v1/blog/:id", (c) => {
-  return c.json({
-    message: "Successfully blog get",
-    id: c.req.param(),
-  });
-});
+blogRoute.get("/:id", async  (c) => {
+  try {
+    const prisma = new PrismaClient({
+      datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
 
-blogRoute.get("/", (c) => {
-  return c.json({ message: "Hello World" });
+    const id = c.req.param("id")
+    const blog  = await prisma.post.findUnique({where: {id}})
+
+    if (!blog) throw new HTTPException(500,{message: "blog Not Found!"})
+    return c.json({
+      message: "success. get single blog ",
+      blog
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new HTTPException(500, {
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
 });
 
 export default blogRoute;
