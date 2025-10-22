@@ -4,7 +4,7 @@ import { withAccelerate } from "@prisma/extension-accelerate";
 import { HTTPException } from "hono/http-exception";
 import { HonoEnvAndVar } from "../types";
 import z from "zod";
-import { BlogCreateSchema } from "../zod";
+import { BlogCreateSchema } from "@gmprincedev/blog-common";
 import { verify } from "hono/jwt";
 
 const blogRoute = new Hono<HonoEnvAndVar>();

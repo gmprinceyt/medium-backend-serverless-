@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { sign } from "hono/jwt";
 import { HonoEnvAndVar } from "../types";
 import z from "zod";
-import { UserSigninSchema, UserSignupSchema } from "../zod";
+import { UserSigninSchema, UserSignupSchema } from "@gmprincedev/blog-common";
 
 const userRoute = new Hono<HonoEnvAndVar>();
 

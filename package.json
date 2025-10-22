@@ -7,6 +7,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
+    "@gmprincedev/blog-common": "^1.0.2",
     "@prisma/extension-accelerate": "^2.0.2",
     "bcryptjs": "^3.0.2",
     "hono": "^4.9.9",
