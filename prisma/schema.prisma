@@ -20,7 +20,7 @@ datasource db {
 model User {
   id       String   @id @default(uuid())
   email    String   @unique
-  name     String?
+  name     String?  @default("anonymous")
   password String
   posts    Post[]
 }
@@ -32,4 +32,5 @@ model Post {
   published Boolean  @default(false)
   author    User     @relation(fields: [authorId], references: [id])
   authorId  String
+  createdAt DateTime  @default(now())
 }

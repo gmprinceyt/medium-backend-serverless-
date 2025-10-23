@@ -34,7 +34,7 @@ blogRoute.use("/*", async (c, next) => {
   }
 });
 
-// POST /api/v1/blog
+// POST
 // Create a Blog
 blogRoute.post("/", async (c) => {
   try {
@@ -116,23 +116,34 @@ blogRoute.put("/:id", async (c) => {
   }
 });
 
-
 // GET /api/v1/blog/bulk
 blogRoute.get("/bulk", async (c) => {
- try {
+  try {
     const prisma = new PrismaClient({
       datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
-    const page  = c.req.query("page");
+    const page = c.req.query("page");
     const skip = Number(page) * 10 || 0;
 
-    const blogs  = await prisma.post.findMany({
+    const blogs = await prisma.post.findMany({
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        published: true,
+        createdAt: true,
+        author: {
+          select: {
+            name: true,
+          },
+        },
+      },
       skip,
       take: 10,
-    })  
+    });
     return c.json({
       message: "Success",
-      blogs
+      blogs,
     });
   } catch (error) {
     if (error instanceof Error) {
@@ -144,19 +155,33 @@ blogRoute.get("/bulk", async (c) => {
 });
 
 // GET /api/v1/blog/:id
-blogRoute.get("/:id", async  (c) => {
+blogRoute.get("/:id", async (c) => {
   try {
     const prisma = new PrismaClient({
       datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
 
-    const id = c.req.param("id")
-    const blog  = await prisma.post.findUnique({where: {id}})
+    const id = c.req.param("id");
+    const blog = await prisma.post.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        published: true,
+        createdAt: true,
+        author: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
 
-    if (!blog) throw new HTTPException(500,{message: "blog Not Found!"})
+    if (!blog) throw new HTTPException(500, { message: "blog Not Found!" });
     return c.json({
       message: "success. get single blog ",
-      blog
+      blog,
     });
   } catch (error) {
     if (error instanceof Error) {
