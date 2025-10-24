@@ -122,10 +122,12 @@ blogRoute.get("/bulk", async (c) => {
     const prisma = new PrismaClient({
       datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
+    const q = c.req.query("q");
     const page = c.req.query("page");
     const skip = Number(page) * 10 || 0;
 
     const blogs = await prisma.post.findMany({
+      where: { title: { contains: q } },
       select: {
         id: true,
         title: true,
